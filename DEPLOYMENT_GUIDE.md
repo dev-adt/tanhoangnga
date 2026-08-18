@@ -1,103 +1,57 @@
-# HƯỚNG DẪN TRIỂN KHAI HỆ THỐNG TÂN HOÀNG NGA LÊN VPS (PRODUCTION)
+# HƯỚNG DẪN TRIỂN KHAI & CẬP NHẬT TÂN HOÀNG NGA LÊN VPS (ZERO-BUILD ON VPS)
 
-Tài liệu này hướng dẫn chi tiết quy trình triển khai website và cổng quản trị **Công ty TNHH Tân Hoàng Nga** lên máy chủ ảo (Linux VPS / Ubuntu 22.04 LTS hoặc 24.04 LTS).
-
----
-
-## 1. Yêu Cầu Cấu Hình Máy Chủ (VPS)
-- **Hệ điều hành**: Ubuntu 20.04 / 22.04 / 24.04 LTS (hoặc Debian 11/12).
-- **Phần cứng khuyến nghị**:
-  - CPU: 2 Cores trở lên.
-  - RAM: 2GB - 4GB RAM.
-  - Ổ cứng: 20GB SSD / NVMe.
-- **Phần mềm lõi**:
-  - Node.js: `v20.x` hoặc `v22.x` (LTS).
-  - Nginx (Web Server & Reverse Proxy).
-  - PM2 (Process Manager cho Node.js).
-  - Certbot (Cấp chứng chỉ SSL HTTPS miễn phí).
+Tài liệu này hướng dẫn chi tiết quy trình **Build trực tiếp trên máy của bạn và đẩy bản build lên GitHub**, giúp trên VPS bạn **CHỈ CẦN 2 DÒNG LỆNH** (`git pull` & `pm2 restart`) là cập nhật xong ngay lập tức trong 2 giây, không lo bị tràn RAM hay lỗi build trên VPS!
 
 ---
 
-## 2. Các Bước Cài Đặt Môi Trường Trên VPS (Chạy Lần Đầu)
+## 1. Ưu Điểm Của Quy Trình Build Sẵn Tại Máy (Local Build -> VPS Pull)
+- **Không tốn tài nguyên VPS**: Không lo VPS bị nghẽn CPU hoặc treo tràn RAM khi biên dịch.
+- **Không có độ trễ / Downtime**: VPS chỉ nhận các file tĩnh & server đã biên dịch sẵn và nạp lại process trong 1-2 giây.
+- **Không lo xung đột môi trường**: Bạn kiểm tra chạy tốt trên máy của mình trước khi đẩy lên.
 
-### Bước 2.1: Cập nhật hệ thống
+---
+
+## 2. Các Bước Cài Đặt Môi Trường Trên VPS (Chỉ Cần Làm 1 Lần Đầu Tiên)
+
+### Bước 2.1: Cài đặt Node.js LTS, Nginx & PM2
 ```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y curl git ufw nginx
-```
 
-### Bước 2.2: Cài đặt Node.js LTS (v20.x)
-```bash
+# Cài đặt Node.js v20.x LTS
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
-node -v # Kiểm tra phiên bản (v20.x.x)
-npm -v  # Kiểm tra npm
-```
 
-### Bước 2.3: Cài đặt PM2 toàn cục
-```bash
+# Cài đặt PM2 toàn cục
 sudo npm install -g pm2
 ```
 
----
-
-## 3. Tải Mã Nguồn & Build Dự Án
-
-### Bước 3.1: Clone repository từ GitHub
+### Bước 2.2: Clone mã nguồn từ GitHub & Cài dependencies
 ```bash
-# Tạo thư mục chứa dự án
 sudo mkdir -p /var/www/tanhoangnga
 sudo chown -R $USER:$USER /var/www/tanhoangnga
 
-# Clone mã nguồn
 git clone https://github.com/dev-adt/tanhoangnga.git /var/www/tanhoangnga
 cd /var/www/tanhoangnga
+
+# Cài đặt dependencies (chỉ cần chạy 1 lần)
+npm install --omit=dev
 ```
 
-### Bước 3.2: Cài đặt thư viện & Build mã nguồn
+### Bước 2.3: Khởi chạy PM2
 ```bash
-# Cài đặt toàn bộ dependencies
-npm install
-
-# Build dự án sang chế độ Production
-npm run build
-```
-
----
-
-## 4. Quản Lý Vận Hành Bằng PM2
-
-### Bước 4.1: Khởi chạy ứng dụng
-```bash
+cd /var/www/tanhoangnga
 pm2 start ecosystem.config.js
-# Hoặc chạy lệnh trực tiếp:
-# pm2 start npm --name "tanhoangnga" -- start -- -p 3000
-```
-
-### Bước 4.2: Thiết lập tự khởi động khi VPS khởi động lại
-```bash
 pm2 save
 pm2 startup
-# Sao chép và chạy lệnh được sinh ra trên terminal (nếu có yêu cầu)
 ```
 
-### Các lệnh quản lý PM2 thường dùng:
-```bash
-pm2 status          # Xem trạng thái ứng dụng
-pm2 logs tanhoangnga # Xem log thời gian thực
-pm2 restart tanhoangnga # Khởi động lại ứng dụng
-```
-
----
-
-## 5. Cấu Hình Nginx Reverse Proxy & SSL
-
-### Bước 5.1: Tạo file cấu hình Nginx cho tên miền
+### Bước 2.4: Cấu hình Nginx & Cấp SSL Miễn Phí (Certbot)
+Tạo file cấu hình Nginx:
 ```bash
 sudo nano /etc/nginx/sites-available/tanhoangnga.vn
 ```
-
-Dán nội dung sau vào file (thay `tanhoangnga.vn` bằng tên miền thật của bạn):
+Dán nội dung cấu hình:
 ```nginx
 server {
     listen 80;
@@ -115,42 +69,50 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Giới hạn dung lượng tải file (cho phép upload ảnh lên đến 20MB)
-    client_max_body_size 20M;
+    client_max_body_size 25M;
 }
 ```
-
-### Bước 5.2: Kích hoạt cấu hình & Khởi động lại Nginx
+Kích hoạt và cấp SSL HTTPS:
 ```bash
 sudo ln -s /etc/nginx/sites-available/tanhoangnga.vn /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
-```
 
-### Bước 5.3: Cấp chứng chỉ bảo mật SSL (HTTPS) miễn phí
-```bash
+# Cấp chứng chỉ SSL HTTPS tự động
 sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d tanhoangnga.vn -d www.tanhoangnga.vn
 ```
-*(Chọn cấu hình tự động chuyển hướng HTTP sang HTTPS 301).*
 
 ---
 
-## 6. Kịch Bản Cập Nhật Nhanh (Update / Deployment Script)
+## 3. QUY TRÌNH CẬP NHẬT CODE SAU NÀY (CỰC KỲ ĐƠN GIẢN)
 
-Khi có bản cập nhật mới từ GitHub, bạn chỉ cần chạy các lệnh sau trên VPS:
+### 👉 Trên máy tính của bạn (Local):
+Mỗi khi chỉnh sửa xong code, bạn chỉ cần chạy lệnh sau trên terminal máy tính:
+```bash
+# 1 Lệnh tự động build và push toàn bộ lên GitHub:
+npm run ship
+```
+*(Lệnh này sẽ tự động: `next build` -> `git add .` -> `git commit` -> `git push origin main`)*
 
+---
+
+### 👉 Trên VPS:
+Mở terminal VPS và chạy đúng **2 lệnh**:
 ```bash
 cd /var/www/tanhoangnga
 git pull origin main
-npm install
-npm run build
 pm2 restart tanhoangnga
 ```
 
+⚡ **Xong!** Website trên VPS đã được cập nhật bản mới nhất ngay lập tức mà không cần build lại trên VPS!
+
 ---
 
-## 7. Thông Tin Truy Cập & Quản Trị
-- **Trang chủ Website**: `https://tanhoangnga.vn`
-- **Cổng Đăng nhập bí mật**: `https://tanhoangnga.vn/auth/login` (hoặc `/login`)
+## 4. Quản Lý & Kiểm Tra Trạng Thái Vận Hành
+- `pm2 status`: Xem trạng thái chạy của ứng dụng.
+- `pm2 logs tanhoangnga`: Xem log hệ thống thời gian thực.
+- `pm2 restart tanhoangnga`: Khởi động lại ứng dụng khi cần.
+- **Trang chủ**: `https://tanhoangnga.vn`
+- **Cổng Đăng nhập bí mật**: `https://tanhoangnga.vn/auth/login`
 - **Dashboard Quản trị**: `https://tanhoangnga.vn/dashboard`

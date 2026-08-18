@@ -7,8 +7,8 @@
 # testing
 /coverage
 
-# next.js
-/.next/
+# next.js build (allow production build for zero-build VPS deployment)
+.next/cache/
 /out/
 
 # production
