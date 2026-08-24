@@ -31,25 +31,39 @@ jobs:
       - name: Assemble Release Package
         run: |
           mkdir -p release
-          # Copy standalone server and node_modules
-          cp -r .next/standalone/* release/
           
-          # Ensure .next/static is present in release
+          # 1. Copy toàn bộ standalone bao gồm cả thư mục ẩn .next
+          cp -a .next/standalone/. release/
+          
+          # 2. Đảm bảo .next/BUILD_ID và .next/static được chép đầy đủ
           mkdir -p release/.next
-          cp -r .next/static release/.next/static
+          if [ -f ".next/BUILD_ID" ]; then
+            cp .next/BUILD_ID release/.next/BUILD_ID
+          fi
+          cp -a .next/static release/.next/static
           
-          # Copy static public assets
+          # 3. Copy thư mục static public
           if [ -d "public" ]; then
-            cp -r public release/public
+            cp -a public release/public
           fi
           
-          # Copy PM2 config
+          # 4. Copy các file cấu hình PM2
           if [ -f "ecosystem.config.cjs" ]; then
             cp ecosystem.config.cjs release/ecosystem.config.cjs
           fi
           if [ -f "ecosystem.config.js" ]; then
             cp ecosystem.config.js release/ecosystem.config.js
           fi
+
+      - name: Validate Release Artifacts
+        run: |
+          echo "==> Kiểm tra tính toàn vẹn của Release Package..."
+          test -f release/server.js || { echo "❌ Thiếu release/server.js"; exit 1; }
+          test -f release/.next/BUILD_ID || { echo "❌ Thiếu release/.next/BUILD_ID"; exit 1; }
+          test -d release/.next/server || { echo "❌ Thiếu release/.next/server"; exit 1; }
+          test -d release/.next/static || { echo "❌ Thiếu release/.next/static"; exit 1; }
+          test -d release/public || { echo "❌ Thiếu release/public"; exit 1; }
+          echo "✅ Tất cả các thành phần Release Package đầy đủ và hợp lệ 100%!"
 
       - name: Push to 'deploy' branch
         uses: peaceiris/actions-gh-pages@v4
