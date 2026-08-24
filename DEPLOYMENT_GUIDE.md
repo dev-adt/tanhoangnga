@@ -1,88 +1,107 @@
-# HƯỚNG DẪN TRIỂN KHAI TÂN HOÀNG NGA (CI/CD GITHUB ACTIONS + STANDALONE DEPLOY)
+# HƯỚNG DẪN TRIỂN KHAI TÂN HOÀNG NGA (CI/CD GITHUB ACTIONS + DATABASE THẬT)
 
-Hệ thống triển khai tự động theo chuẩn công nghiệp:
-- **Nhánh `main`**: Chứa mã nguồn sạch của dự án.
-- **GitHub Actions (Ubuntu Runner)**: Tự động cài dependencies, build `output: 'standalone'` và đẩy toàn bộ gói chạy hoàn chỉnh sang nhánh **`deploy`**.
-- **Máy chủ VPS**: Chỉ cần kéo nhánh **`deploy`** và khởi động bằng PM2 qua `server.js` (không cần cài devDependencies, không cần build trên VPS, không xung đột môi trường Windows/Linux).
-
----
-
-## 1. CẤU HÌNH GITHUB ACTIONS & NEXT.JS STANDALONE
-- **Next.js Config (`next.config.ts`)**: Đã bật `output: 'standalone'`.
-- **PM2 Runner (`ecosystem.config.cjs`)**: Đã cấu hình chạy `server.js` tại thư mục `/www/wwwroot/tanhoangnga.com` với Port `3022`.
-- **Workflow (`.github/workflows/deploy.yml`)**: Tự động kích hoạt mỗi khi push lên `main` để xuất gói `release/` sang nhánh `deploy`.
+Hệ thống vận hành chính thức với **Cơ Sở Dữ Liệu Thực Tế (Persistent Database - Prisma ORM)**:
+- **Nhánh `main`**: Mã nguồn sạch của dự án.
+- **GitHub Actions (Ubuntu Runner)**: Tự động biên dịch Prisma engine & Next.js Standalone $\rightarrow$ Đóng gói và đẩy sang nhánh **`deploy`**.
+- **Máy chủ VPS**: Kéo nhánh **`deploy`** $\rightarrow$ Tự động đồng bộ Database (`tanhoangnga.db`) $\rightarrow$ Khởi chạy PM2 qua `server.js` (Port 3022).
 
 ---
 
-## 2. HƯỚNG DẪN SETUP SẠCH LẦN ĐẦU TRÊN VPS
+## 1. THÔNG TIN DATABASE
+- **Vị trí Database trên VPS**: `/www/wwwroot/tanhoangnga.com/data/tanhoangnga.db`
+- **File cấu hình môi trường**: `/www/wwwroot/tanhoangnga.com/.env`
+- **Tài khoản Super Admin khởi tạo**: `hoang.bt@tanhoangnga.vn` | **Mật khẩu**: `admin@2026`
 
-### Bước 2.1: Đăng nhập SSH vào VPS và chuẩn bị thư mục
+---
+
+## 2. HƯỚNG DẪN SETUP SẠCH TRÊN VPS (LÀM 1 LẦN DUY NHẤT)
+
+Mở **Terminal aaPanel** trên VPS và chạy:
+
 ```bash
-# 1. Dừng ứng dụng cũ nếu đang chạy
-pm2 stop tanhoangnga 2>/dev/null || true
-
-# 2. Sao lưu file .env (nếu có)
-cp /www/wwwroot/tanhoangnga.com/.env /root/tanhoangnga.env.backup 2>/dev/null || true
-
-# 3. Đổi tên thư mục cũ để backup
+# 1. Dọn dẹp tiến trình cũ và dọn chỗ trống
+pm2 delete tanhoangnga 2>/dev/null || true
+fuser -k 3022/tcp 2>/dev/null || true
 cd /www/wwwroot
-mv tanhoangnga.com "tanhoangnga.com.backup-$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
-```
+rm -rf tanhoangnga.com
 
-### Bước 2.2: Clone nhánh `deploy` (chứa toàn bộ gói Standalone đã build sẵn)
-```bash
+# 2. Clone nhánh deploy
 git clone \
   --branch deploy \
   --single-branch \
   https://github.com/dev-adt/tanhoangnga.git \
   /www/wwwroot/tanhoangnga.com
-```
 
-### Bước 2.3: Khôi phục `.env` (nếu cần) & Khởi động PM2
-```bash
-# Khôi phục file env nếu có
-cp /root/tanhoangnga.env.backup /www/wwwroot/tanhoangnga.com/.env 2>/dev/null || true
-
-# Khởi chạy PM2 với ecosystem.config.cjs
+# 3. Khởi tạo môi trường & Database
 cd /www/wwwroot/tanhoangnga.com
-pm2 delete tanhoangnga 2>/dev/null || true
+cp .env.example .env
+mkdir -p data
+
+# 4. Khởi tạo Database và nạp dữ liệu thật ban đầu
+npx prisma db push
+node prisma/seed.mjs
+
+# 5. Khởi chạy PM2
 pm2 start ecosystem.config.cjs
 pm2 save
-```
 
-### Bước 2.4: Kiểm tra trạng thái vận hành
-```bash
-pm2 describe tanhoangnga
-curl -sSI http://127.0.0.1:3022/ | head -n 20
-curl -sSI https://tanhoangnga.com/ | head -n 20
+# 6. Kiểm tra kết nối
+curl -I http://127.0.0.1:3022/
 ```
 
 ---
 
-## 3. CÀI ĐẶT SCRIPT CẬP NHẬT 1 LỆNH DUY NHẤT CHO CÁC LẦN SAU
+## 3. CẬP NHẬT SCRIPT 1 LỆNH CHO CÁC LẦN SAU
 
-Tạo file script trên VPS tại `/www/scripts/deploy-tanhoangnga.sh`:
+Tạo file script `/www/scripts/deploy-tanhoangnga.sh`:
 ```bash
 mkdir -p /www/scripts
-nano /www/scripts/deploy-tanhoangnga.sh
-```
-
-Dán nội dung script sau vào:
-```bash
+cat << 'EOF' > /www/scripts/deploy-tanhoangnga.sh
 #!/usr/bin/env bash
 set -euo pipefail
 
 APP_DIR="/www/wwwroot/tanhoangnga.com"
 cd "$APP_DIR"
 
+echo "==> Sao lưu an toàn file .env và database..."
+mkdir -p "$APP_DIR/data"
+if [ -f "$APP_DIR/.env" ]; then
+  cp "$APP_DIR/.env" /root/tanhoangnga.env.backup 2>/dev/null || true
+fi
+if [ -f "$APP_DIR/data/tanhoangnga.db" ]; then
+  cp "$APP_DIR/data/tanhoangnga.db" /root/tanhoangnga.db.backup 2>/dev/null || true
+fi
+
 echo "==> Đang kéo bản cập nhật mới nhất từ nhánh deploy..."
 git fetch origin deploy
 git reset --hard origin/deploy
-git clean -fd
 
-# Kiểm tra các thành phần cốt lõi của gói standalone
+# Khôi phục .env và Database
+if [ -f /root/tanhoangnga.env.backup ]; then
+  cp /root/tanhoangnga.env.backup "$APP_DIR/.env"
+else
+  if [ ! -f "$APP_DIR/.env" ]; then
+    cp "$APP_DIR/.env.example" "$APP_DIR/.env"
+  fi
+fi
+
+if [ -f /root/tanhoangnga.db.backup ]; then
+  mkdir -p "$APP_DIR/data"
+  cp /root/tanhoangnga.db.backup "$APP_DIR/data/tanhoangnga.db"
+fi
+
+# Kiểm tra tính toàn vẹn của gói Standalone
 test -f server.js
 test -d .next/static
+
+# Đồng bộ Database Schema
+echo "==> Đồng bộ Cơ Sở Dữ Liệu..."
+if [ ! -f "$APP_DIR/data/tanhoangnga.db" ]; then
+  npx prisma db push
+  node prisma/seed.mjs
+else
+  npx prisma db push --skip-generate
+fi
 
 echo "==> Khởi động lại PM2..."
 pm2 restart ecosystem.config.cjs --update-env
@@ -93,23 +112,13 @@ curl --fail --silent --show-error http://127.0.0.1:3022/ >/dev/null
 
 echo "==> Phiên bản triển khai hiện tại:"
 git log -1 --oneline
-echo "✅ Deploy tanhoangnga.com thành công!"
-```
+echo "✅ Deploy tanhoangnga.com với Database thật thành công!"
+EOF
 
-Cấp quyền thực thi:
-```bash
 chmod +x /www/scripts/deploy-tanhoangnga.sh
 ```
 
-👉 **Mỗi lần sau khi bạn push code mới lên GitHub và GitHub Actions build xong, bạn chỉ cần gõ đúng 1 dòng lệnh trên VPS**:
+👉 Từ nay, mỗi lần cập nhật bạn chỉ cần chạy:
 ```bash
 /www/scripts/deploy-tanhoangnga.sh
 ```
-
----
-
-## 4. BẢO MẬT & QUẢN TRỊ
-- **Trang chủ**: `https://tanhoangnga.com`
-- **Cổng Đăng Nhập bí mật**: `https://tanhoangnga.com/auth/login`
-- **Dashboard Quản trị**: `https://tanhoangnga.com/dashboard`
-- **Tài khoản Super Admin**: `hoang.bt@tanhoangnga.vn` | **Mật khẩu**: `admin@2026`

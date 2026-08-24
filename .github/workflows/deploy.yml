@@ -25,11 +25,18 @@ jobs:
       - name: Install Dependencies
         run: npm ci || npm install
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "file:./data/tanhoangnga.db"
+
       - name: Clean Previous Builds
         run: rm -rf .next release
 
       - name: Build Next.js Standalone
         run: npm run build
+        env:
+          DATABASE_URL: "file:./data/tanhoangnga.db"
 
       - name: Validate Marketing Routes are Dynamic (Zero Route Cache)
         run: |
@@ -59,12 +66,20 @@ jobs:
             cp -a public release/public
           fi
           
-          # 4. Copy các file cấu hình PM2
+          # 4. Copy Prisma Schema & Seed script
+          if [ -d "prisma" ]; then
+            cp -a prisma release/prisma
+          fi
+
+          # 5. Copy các file cấu hình PM2 & env example
           if [ -f "ecosystem.config.cjs" ]; then
             cp ecosystem.config.cjs release/ecosystem.config.cjs
           fi
           if [ -f "ecosystem.config.js" ]; then
             cp ecosystem.config.js release/ecosystem.config.js
+          fi
+          if [ -f ".env.example" ]; then
+            cp .env.example release/.env.example
           fi
 
       - name: Validate Release Artifacts
@@ -75,6 +90,7 @@ jobs:
           test -d release/.next/server || { echo "❌ Thiếu release/.next/server"; exit 1; }
           test -d release/.next/static || { echo "❌ Thiếu release/.next/static"; exit 1; }
           test -d release/public || { echo "❌ Thiếu release/public"; exit 1; }
+          test -f release/prisma/schema.prisma || { echo "❌ Thiếu release/prisma/schema.prisma"; exit 1; }
           echo "✅ Tất cả các thành phần Release Package đầy đủ và hợp lệ 100%!"
 
       - name: Push to 'deploy' branch
