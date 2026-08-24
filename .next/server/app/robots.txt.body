@@ -1,7 +1,0 @@
-User-Agent: *
-Allow: /
-Disallow: /dashboard/
-Disallow: /api/
-Disallow: /preview/
-
-Sitemap: https://tanhoangnga.vn/sitemap.xml

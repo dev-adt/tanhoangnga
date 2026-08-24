@@ -7,8 +7,8 @@
 # testing
 /coverage
 
-# next.js build (allow production build for zero-build VPS deployment)
-.next/cache/
+# next.js
+/.next/
 /out/
 
 # production
@@ -44,3 +44,6 @@ next-env.d.ts
 
 # OS files
 Thumbs.db
+
+*.docx
+
