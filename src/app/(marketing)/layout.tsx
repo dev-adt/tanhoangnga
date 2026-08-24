@@ -3,6 +3,9 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Footer';
 import { ScrollToTop } from '@/components/marketing/ScrollToTop';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function MarketingLayout({
   children,
 }: {
