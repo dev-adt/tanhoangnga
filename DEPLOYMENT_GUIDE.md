@@ -1,151 +1,115 @@
-# HƯỚNG DẪN TRIỂN KHAI WEBSITE TÂN HOÀNG NGA LÊN VPS (DOMAIN: TANHOANGNGA.COM)
+# HƯỚNG DẪN TRIỂN KHAI TÂN HOÀNG NGA (CI/CD GITHUB ACTIONS + STANDALONE DEPLOY)
 
-Tài liệu này hướng dẫn từng bước chi tiết từ A - Z để đưa website và cổng quản trị **Công ty TNHH Tân Hoàng Nga** lên máy chủ Linux VPS và chạy chính thức trên tên miền **tanhoangnga.com**.
-
----
-
-## 1. GIẢI ĐÁP QUAN TRỌNG VỀ DATABASE VÀ FILE `.ENV`
-
-### 🔹 Có cần tạo Database (MySQL / PostgreSQL) không?
-- **KHÔNG CẦN!** Hệ thống đã được tích hợp sẵn kiến trúc **Data Repository & Seed Store** (chứa toàn bộ hồ sơ năng lực 2026, 4 giải pháp AI lõi, bài viết mẫu chuẩn SEO, ma trận phân quyền RBAC và hệ thống tiếp nhận Lead CRM). Hệ thống tự khởi tạo và vận hành mượt mà ngay khi chạy, không lo nghẽn hay lỗi kết nối DB.
-
-### 🔹 Có cần tạo file `.env` không?
-- **KHÔNG BẮT BUỘC** (Hệ thống đã có sẵn fallback cấu hình mặc định).
-- Tuy nhiên, để tối ưu nhận diện tên miền chính thức, bạn có thể tạo 1 file `.env.production` trên VPS với nội dung:
-  ```env
-  PORT=3000
-  NODE_ENV=production
-  NEXT_PUBLIC_SITE_URL=https://tanhoangnga.com
-  ```
+Hệ thống triển khai tự động theo chuẩn công nghiệp:
+- **Nhánh `main`**: Chứa mã nguồn sạch của dự án.
+- **GitHub Actions (Ubuntu Runner)**: Tự động cài dependencies, build `output: 'standalone'` và đẩy toàn bộ gói chạy hoàn chỉnh sang nhánh **`deploy`**.
+- **Máy chủ VPS**: Chỉ cần kéo nhánh **`deploy`** và khởi động bằng PM2 qua `server.js` (không cần cài devDependencies, không cần build trên VPS, không xung đột môi trường Windows/Linux).
 
 ---
 
-## 2. CÁC BƯỚC CÀI ĐẶT LÊN VPS (CHỈ LÀM 1 LẦN DUY NHẤT)
+## 1. CẤU HÌNH GITHUB ACTIONS & NEXT.JS STANDALONE
+- **Next.js Config (`next.config.ts`)**: Đã bật `output: 'standalone'`.
+- **PM2 Runner (`ecosystem.config.cjs`)**: Đã cấu hình chạy `server.js` tại thư mục `/www/wwwroot/tanhoangnga.com` với Port `3022`.
+- **Workflow (`.github/workflows/deploy.yml`)**: Tự động kích hoạt mỗi khi push lên `main` để xuất gói `release/` sang nhánh `deploy`.
 
-### Bước 1: Đăng nhập vào VPS qua SSH
-Mở terminal trên máy tính của bạn và kết nối tới VPS:
+---
+
+## 2. HƯỚNG DẪN SETUP SẠCH LẦN ĐẦU TRÊN VPS
+
+### Bước 2.1: Đăng nhập SSH vào VPS và chuẩn bị thư mục
 ```bash
-ssh root@<IP_CỦA_VPS>
+# 1. Dừng ứng dụng cũ nếu đang chạy
+pm2 stop tanhoangnga 2>/dev/null || true
+
+# 2. Sao lưu file .env (nếu có)
+cp /www/wwwroot/tanhoangnga.com/.env /root/tanhoangnga.env.backup 2>/dev/null || true
+
+# 3. Đổi tên thư mục cũ để backup
+cd /www/wwwroot
+mv tanhoangnga.com "tanhoangnga.com.backup-$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
 ```
 
-### Bước 2: Cài đặt Node.js 20 LTS, Nginx và PM2
-Chạy lần lượt các lệnh sau trên VPS:
+### Bước 2.2: Clone nhánh `deploy` (chứa toàn bộ gói Standalone đã build sẵn)
 ```bash
-# Cập nhật gói hệ thống
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl git ufw nginx
-
-# Cài đặt Node.js v20.x LTS
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Cài đặt PM2 (quản lý tiến trình nền)
-sudo npm install -g pm2
+git clone \
+  --branch deploy \
+  --single-branch \
+  https://github.com/dev-adt/tanhoangnga.git \
+  /www/wwwroot/tanhoangnga.com
 ```
 
----
-
-### Bước 3: Tải mã nguồn từ GitHub về VPS
+### Bước 2.3: Khôi phục `.env` (nếu cần) & Khởi động PM2
 ```bash
-# Tạo thư mục chứa web
-sudo mkdir -p /var/www/tanhoangnga
-sudo chown -R $USER:$USER /var/www/tanhoangnga
+# Khôi phục file env nếu có
+cp /root/tanhoangnga.env.backup /www/wwwroot/tanhoangnga.com/.env 2>/dev/null || true
 
-# Kéo mã nguồn từ GitHub
-git clone https://github.com/dev-adt/tanhoangnga.git /var/www/tanhoangnga
-cd /var/www/tanhoangnga
-
-# Cài đặt thư viện & Build dự án
-npm install
-npm run build
-```
-
----
-
-### Bước 4: Khởi chạy website bằng PM2
-```bash
-cd /var/www/tanhoangnga
-pm2 start ecosystem.config.js
+# Khởi chạy PM2 với ecosystem.config.cjs
+cd /www/wwwroot/tanhoangnga.com
+pm2 delete tanhoangnga 2>/dev/null || true
+pm2 start ecosystem.config.cjs
 pm2 save
-pm2 startup
 ```
-*(Nếu terminal xuất hiện 1 dòng lệnh `sudo env PATH=...`, hãy copy dòng đó và dán chạy để PM2 tự khởi động cùng VPS).*
 
----
-
-### Bước 5: Cấu hình Nginx cho tên miền `tanhoangnga.com`
-Tạo file cấu hình web:
+### Bước 2.4: Kiểm tra trạng thái vận hành
 ```bash
-sudo nano /etc/nginx/sites-available/tanhoangnga.com
+pm2 describe tanhoangnga
+curl -sSI http://127.0.0.1:3022/ | head -n 20
+curl -sSI https://tanhoangnga.com/ | head -n 20
 ```
 
-Dán toàn bộ nội dung sau vào:
-```nginx
-server {
-    listen 80;
-    server_name tanhoangnga.com www.tanhoangnga.com;
+---
 
-    location / {
-        proxy_pass http://127.0.0.1:3022;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+## 3. CÀI ĐẶT SCRIPT CẬP NHẬT 1 LỆNH DUY NHẤT CHO CÁC LẦN SAU
 
-    # Cho phép upload ảnh lên đến 25MB
-    client_max_body_size 25M;
-}
-```
-
-Nhấn `Ctrl + O` rồi `Enter` để lưu, `Ctrl + X` để thoát.
-
-Kích hoạt cấu hình:
+Tạo file script trên VPS tại `/www/scripts/deploy-tanhoangnga.sh`:
 ```bash
-sudo ln -s /etc/nginx/sites-available/tanhoangnga.com /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+mkdir -p /www/scripts
+nano /www/scripts/deploy-tanhoangnga.sh
 ```
 
----
-
-### Bước 6: Cài đặt chứng chỉ bảo mật SSL (HTTPS) miễn phí
-Đảm bảo bạn đã trỏ bản ghi DNS của tên miền `tanhoangnga.com` và `www.tanhoangnga.com` (bản ghi A) về IP của VPS, sau đó chạy:
+Dán nội dung script sau vào:
 ```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d tanhoangnga.com -d www.tanhoangnga.com
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR="/www/wwwroot/tanhoangnga.com"
+cd "$APP_DIR"
+
+echo "==> Đang kéo bản cập nhật mới nhất từ nhánh deploy..."
+git fetch origin deploy
+git reset --hard origin/deploy
+git clean -fd
+
+# Kiểm tra các thành phần cốt lõi của gói standalone
+test -f server.js
+test -d .next/static
+
+echo "==> Khởi động lại PM2..."
+pm2 restart ecosystem.config.cjs --update-env
+pm2 save
+
+sleep 2
+curl --fail --silent --show-error http://127.0.0.1:3022/ >/dev/null
+
+echo "==> Phiên bản triển khai hiện tại:"
+git log -1 --oneline
+echo "✅ Deploy tanhoangnga.com thành công!"
 ```
-*(Làm theo hướng dẫn trên màn hình: nhập email và chọn tự động Redirect HTTP sang HTTPS).*
+
+Cấp quyền thực thi:
+```bash
+chmod +x /www/scripts/deploy-tanhoangnga.sh
+```
+
+👉 **Mỗi lần sau khi bạn push code mới lên GitHub và GitHub Actions build xong, bạn chỉ cần gõ đúng 1 dòng lệnh trên VPS**:
+```bash
+/www/scripts/deploy-tanhoangnga.sh
+```
 
 ---
 
-## 3. QUY TRÌNH CẬP NHẬT MÃ NGUỒN SAU NÀY (KHI CÓ THAY ĐỔI)
-
-Mỗi khi bạn sửa code trên máy tính và muốn cập nhật lên VPS:
-
-1. **Trên máy tính của bạn**:
-   ```bash
-   git add .
-   git commit -m "update: noi dung moi"
-   git push origin main
-   ```
-
-2. **Trên VPS**:
-   ```bash
-   cd /var/www/tanhoangnga
-   git pull origin main
-   npm run build
-   pm2 restart tanhoangnga
-   ```
-
----
-
-## 4. THÔNG TIN TRUY CẬP HỆ THỐNG
-- **Trang chủ chính thức**: `https://tanhoangnga.com`
-- **Cổng Đăng Nhập bí mật**: `https://tanhoangnga.com/auth/login` (hoặc `/login`)
-- **Dashboard Quản trị CMS & RBAC**: `https://tanhoangnga.com/dashboard`
+## 4. BẢO MẬT & QUẢN TRỊ
+- **Trang chủ**: `https://tanhoangnga.com`
+- **Cổng Đăng Nhập bí mật**: `https://tanhoangnga.com/auth/login`
+- **Dashboard Quản trị**: `https://tanhoangnga.com/dashboard`
 - **Tài khoản Super Admin**: `hoang.bt@tanhoangnga.vn` | **Mật khẩu**: `admin@2026`

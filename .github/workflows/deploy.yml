@@ -1,0 +1,59 @@
+name: Build & Deploy Standalone
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build Next.js Standalone
+        run: npm run build
+
+      - name: Assemble Release Package
+        run: |
+          mkdir -p release
+          # Copy standalone server and node_modules
+          cp -r .next/standalone/* release/
+          
+          # Ensure .next/static is present in release
+          mkdir -p release/.next
+          cp -r .next/static release/.next/static
+          
+          # Copy static public assets
+          if [ -d "public" ]; then
+            cp -r public release/public
+          fi
+          
+          # Copy PM2 config
+          if [ -f "ecosystem.config.cjs" ]; then
+            cp ecosystem.config.cjs release/ecosystem.config.cjs
+          fi
+
+      - name: Push to 'deploy' branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: deploy
+          publish_dir: ./release
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'

@@ -7,9 +7,10 @@
 # testing
 /coverage
 
-# next.js build (allow prebuilt production files, ignore compiler cache)
-.next/cache/
+# next.js
+/.next/
 /out/
+/release/
 
 # production
 /build
