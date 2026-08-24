@@ -83,19 +83,28 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = 'tnh_auth_session_user';
+const AUTH_STORAGE_KEY = 'tnh_auth_token_v3';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load session from localStorage
+    // Clear legacy test sessions from earlier versions
     try {
+      localStorage.removeItem('tnh_auth_session_user');
+      localStorage.removeItem('tnh_auth_session_v2');
+
       const savedUserStr = localStorage.getItem(AUTH_STORAGE_KEY);
       if (savedUserStr) {
         const parsed = JSON.parse(savedUserStr);
-        setCurrentUser(parsed);
+        // Verify valid user object with id and role
+        if (parsed && parsed.id && parsed.email && parsed.roleSlug) {
+          setCurrentUser(parsed);
+        } else {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+          setCurrentUser(null);
+        }
       } else {
         // No active session: User must log in via /auth/login
         setCurrentUser(null);

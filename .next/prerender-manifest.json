@@ -1,11 +1,36 @@
 {
   "version": 4,
   "routes": {
-    "/icon.svg": {
+    "/_not-found": {
+      "initialStatus": 404,
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/_not-found",
+      "dataRoute": "/_not-found.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/robots.txt": {
       "initialHeaders": {
-        "cache-control": "public, immutable, no-transform, max-age=31536000",
-        "content-type": "image/svg+xml",
-        "x-next-cache-tags": "_N_T_/layout,_N_T_/icon.svg/layout,_N_T_/icon.svg/route,_N_T_/icon.svg"
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-type": "text/plain",
+        "x-next-cache-tags": "_N_T_/layout,_N_T_/robots.txt/layout,_N_T_/robots.txt/route,_N_T_/robots.txt"
       },
       "experimentalBypassFor": [
         {
@@ -19,7 +44,7 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/icon.svg",
+      "srcRoute": "/robots.txt",
       "dataRoute": null,
       "allowHeader": [
         "host",
@@ -59,11 +84,11 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/robots.txt": {
+    "/icon.svg": {
       "initialHeaders": {
-        "cache-control": "public, max-age=0, must-revalidate",
-        "content-type": "text/plain",
-        "x-next-cache-tags": "_N_T_/layout,_N_T_/robots.txt/layout,_N_T_/robots.txt/route,_N_T_/robots.txt"
+        "cache-control": "public, immutable, no-transform, max-age=31536000",
+        "content-type": "image/svg+xml",
+        "x-next-cache-tags": "_N_T_/layout,_N_T_/icon.svg/layout,_N_T_/icon.svg/route,_N_T_/icon.svg"
       },
       "experimentalBypassFor": [
         {
@@ -77,33 +102,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/robots.txt",
+      "srcRoute": "/icon.svg",
       "dataRoute": null,
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/_not-found": {
-      "initialStatus": 404,
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/_not-found",
-      "dataRoute": "/_not-found.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -137,6 +137,30 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/",
+      "dataRoute": "/index.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/auth/login": {
       "experimentalBypassFor": [
         {
@@ -152,30 +176,6 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/auth/login",
       "dataRoute": "/auth/login.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/dashboard/leads": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/dashboard/leads",
-      "dataRoute": "/dashboard/leads.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -209,30 +209,6 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/dashboard": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/dashboard",
-      "dataRoute": "/dashboard.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
     "/dashboard/posts": {
       "experimentalBypassFor": [
         {
@@ -257,7 +233,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/dashboard/roles": {
+    "/dashboard": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -270,32 +246,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/dashboard/roles",
-      "dataRoute": "/dashboard/roles.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/dashboard/settings": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/dashboard/settings",
-      "dataRoute": "/dashboard/settings.rsc",
+      "srcRoute": "/dashboard",
+      "dataRoute": "/dashboard.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -329,7 +281,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/dieu-khoan-su-dung": {
+    "/dashboard/settings": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -342,8 +294,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/dieu-khoan-su-dung",
-      "dataRoute": "/dieu-khoan-su-dung.rsc",
+      "srcRoute": "/dashboard/settings",
+      "dataRoute": "/dashboard/settings.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -377,6 +329,30 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/dieu-khoan-su-dung": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/dieu-khoan-su-dung",
+      "dataRoute": "/dieu-khoan-su-dung.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/doi-tac": {
       "experimentalBypassFor": [
         {
@@ -392,30 +368,6 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/doi-tac",
       "dataRoute": "/doi-tac.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/giai-phap/dienbien-today": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/giai-phap/dienbien-today",
-      "dataRoute": "/giai-phap/dienbien-today.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -449,7 +401,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/giai-phap": {
+    "/giai-phap/dienbien-today": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -462,32 +414,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/giai-phap",
-      "dataRoute": "/giai-phap.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/giai-phap/orion-ai-business-os": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/giai-phap/orion-ai-business-os",
-      "dataRoute": "/giai-phap/orion-ai-business-os.rsc",
+      "srcRoute": "/giai-phap/dienbien-today",
+      "dataRoute": "/giai-phap/dienbien-today.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -521,7 +449,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/gioi-thieu/nang-luc-loi-the": {
+    "/giai-phap": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -534,8 +462,32 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/gioi-thieu/nang-luc-loi-the",
-      "dataRoute": "/gioi-thieu/nang-luc-loi-the.rsc",
+      "srcRoute": "/giai-phap",
+      "dataRoute": "/giai-phap.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/dashboard/leads": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/dashboard/leads",
+      "dataRoute": "/dashboard/leads.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -569,6 +521,30 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/gioi-thieu/nang-luc-loi-the": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/gioi-thieu/nang-luc-loi-the",
+      "dataRoute": "/gioi-thieu/nang-luc-loi-the.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/lien-he": {
       "experimentalBypassFor": [
         {
@@ -584,54 +560,6 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/lien-he",
       "dataRoute": "/lien-he.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/gioi-thieu": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/gioi-thieu",
-      "dataRoute": "/gioi-thieu.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/gioi-thieu/tam-nhin-su-menh": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/gioi-thieu/tam-nhin-su-menh",
-      "dataRoute": "/gioi-thieu/tam-nhin-su-menh.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -665,7 +593,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/dashboard/categories": {
+    "/dashboard/roles": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -678,8 +606,32 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/dashboard/categories",
-      "dataRoute": "/dashboard/categories.rsc",
+      "srcRoute": "/dashboard/roles",
+      "dataRoute": "/dashboard/roles.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/gioi-thieu/tam-nhin-su-menh": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/gioi-thieu/tam-nhin-su-menh",
+      "dataRoute": "/gioi-thieu/tam-nhin-su-menh.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -713,6 +665,30 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/dashboard/categories": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/dashboard/categories",
+      "dataRoute": "/dashboard/categories.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/dashboard/posts/new": {
       "experimentalBypassFor": [
         {
@@ -728,6 +704,30 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/dashboard/posts/new",
       "dataRoute": "/dashboard/posts/new.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/gioi-thieu": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/gioi-thieu",
+      "dataRoute": "/gioi-thieu.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -761,7 +761,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/": {
+    "/giai-phap/orion-ai-business-os": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -774,8 +774,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/",
-      "dataRoute": "/index.rsc",
+      "srcRoute": "/giai-phap/orion-ai-business-os",
+      "dataRoute": "/giai-phap/orion-ai-business-os.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
