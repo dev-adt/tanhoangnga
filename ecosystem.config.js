@@ -2,17 +2,18 @@ module.exports = {
   apps: [
     {
       name: 'tanhoangnga',
-      script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 3022',
+      cwd: '/www/wwwroot/tanhoangnga.com',
+      script: 'server.js',
+      interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
-      watch: false,
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 3022
-      }
-    }
-  ]
+        HOSTNAME: '127.0.0.1',
+        PORT: 3022,
+      },
+    },
+  ],
 };

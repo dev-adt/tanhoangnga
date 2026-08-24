@@ -47,6 +47,9 @@ jobs:
           if [ -f "ecosystem.config.cjs" ]; then
             cp ecosystem.config.cjs release/ecosystem.config.cjs
           fi
+          if [ -f "ecosystem.config.js" ]; then
+            cp ecosystem.config.js release/ecosystem.config.js
+          fi
 
       - name: Push to 'deploy' branch
         uses: peaceiris/actions-gh-pages@v4
