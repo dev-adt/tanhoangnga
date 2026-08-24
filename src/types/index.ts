@@ -105,6 +105,9 @@ export interface Category {
   slug: string;
   description: string;
   postCount?: number;
+  isHidden?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Tag {

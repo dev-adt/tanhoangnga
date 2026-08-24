@@ -55,8 +55,17 @@ export const repo = {
   },
 
   // POSTS & PINNING RULES
-  getPosts(options?: { status?: PostStatus; categorySlug?: string; tagSlug?: string; search?: string }): Post[] {
+  getPosts(options?: { status?: PostStatus; categorySlug?: string; tagSlug?: string; search?: string; includeHiddenCategories?: boolean }): Post[] {
     let list = [...store.posts];
+
+    // By default, exclude posts from hidden categories for public requests
+    if (!options?.includeHiddenCategories) {
+      const hiddenCategorySlugs = new Set(
+        store.categories.filter(c => c.isHidden).map(c => c.slug)
+      );
+      list = list.filter(p => !hiddenCategorySlugs.has(p.categorySlug));
+    }
+
     if (options?.status) {
       list = list.filter(p => p.status === options.status);
     }
@@ -85,9 +94,12 @@ export const repo = {
     return store.posts.find(p => p.id === id);
   },
 
-  // Homepage featured posts: Max 3 pinned, fallback to newest published
+  // Homepage featured posts: Max 3 pinned, fallback to newest published (excludes hidden categories)
   getHomepageFeaturedPosts(): Post[] {
-    const published = store.posts.filter(p => p.status === 'PUBLISHED');
+    const hiddenCategorySlugs = new Set(
+      store.categories.filter(c => c.isHidden).map(c => c.slug)
+    );
+    const published = store.posts.filter(p => p.status === 'PUBLISHED' && !hiddenCategorySlugs.has(p.categorySlug));
     
     // Sort pinned posts by pinOrder (1, 2, 3)
     const pinned = published
@@ -163,34 +175,43 @@ export const repo = {
   deletePost(id: string, actorName = 'Admin'): boolean {
     const index = store.posts.findIndex(p => p.id === id);
     if (index === -1) return false;
-    const deleted = store.posts.splice(index, 1)[0];
-    repo.addAuditLog('POST_DELETE', 'Post', id, `Xóa bài viết: "${deleted.title}"`, actorName);
+    const post = store.posts[index];
+    store.posts.splice(index, 1);
+    repo.addAuditLog('POST_DELETE', 'Post', id, `Xóa bài viết: "${post.title}"`, actorName);
     return true;
   },
 
-  // Pinning transaction helper (enforce max 3 pinned)
-  reorderPins(targetPostId: string, desiredOrder: 1 | 2 | 3): void {
-    // Check if another post currently has this order
-    store.posts.forEach(p => {
-      if (p.id !== targetPostId && p.isPinned && p.pinOrder === desiredOrder) {
-        // Shift existing post or remove its pin
-        p.isPinned = false;
-        p.pinOrder = null;
-      }
-    });
+  reorderPins(postId: string, requestedOrder: 1 | 2 | 3): void {
+    // If another post has this pin order, swap or clear it
+    const existing = store.posts.find(p => p.id !== postId && p.isPinned && p.pinOrder === requestedOrder);
+    if (existing) {
+      existing.pinOrder = null;
+      existing.isPinned = false;
+    }
   },
 
-  // 301 Redirect lookup
   getRedirectForSlug(slug: string): PostRedirect | undefined {
     return store.redirects.find(r => r.oldSlug === slug);
   },
 
+  checkSlugRedirect(slug: string): PostRedirect | undefined {
+    return store.redirects.find(r => r.oldSlug === slug);
+  },
+
   // CATEGORIES & TAGS
-  getCategories(): Category[] {
-    return store.categories.map(c => ({
+  getCategories(includeHidden = false): Category[] {
+    let list = [...store.categories];
+    if (!includeHidden) {
+      list = list.filter(c => !c.isHidden);
+    }
+    return list.map(c => ({
       ...c,
       postCount: store.posts.filter(p => p.categorySlug === c.slug && p.status === 'PUBLISHED').length
     }));
+  },
+
+  getCategoryBySlug(slug: string): Category | undefined {
+    return store.categories.find(c => c.slug === slug);
   },
 
   getTags(): Tag[] {
@@ -200,11 +221,82 @@ export const repo = {
     }));
   },
 
-  createCategory(name: string, slug: string, description: string, actorName = 'Admin'): Category {
-    const cat: Category = { id: `cat-${Date.now()}`, name, slug, description };
+  createCategory(data: { name: string; slug: string; description: string }, actorName = 'Super Admin'): Category {
+    const existing = store.categories.find(c => c.slug === data.slug);
+    if (existing) throw new Error(`Chuyên mục với slug "${data.slug}" đã tồn tại.`);
+
+    const cat: Category = { 
+      id: `cat-${Date.now()}`, 
+      name: data.name.trim(), 
+      slug: data.slug.trim(), 
+      description: data.description.trim(),
+      isHidden: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
     store.categories.push(cat);
-    repo.addAuditLog('CATEGORY_CREATE', 'Category', cat.id, `Tạo chuyên mục: "${name}"`, actorName);
+    repo.addAuditLog('CATEGORY_CREATE', 'Category', cat.id, `Tạo chuyên mục mới: "${cat.name}" (/${cat.slug})`, actorName);
     return cat;
+  },
+
+  updateCategory(id: string, data: Partial<Category>, actorName = 'Super Admin'): Category {
+    const cat = store.categories.find(c => c.id === id);
+    if (!cat) throw new Error('Category not found');
+
+    const oldName = cat.name;
+    const oldSlug = cat.slug;
+
+    if (data.name) cat.name = data.name.trim();
+    if (data.slug && data.slug !== oldSlug) {
+      // Update all posts belonging to this old slug
+      store.posts.forEach(p => {
+        if (p.categorySlug === oldSlug) {
+          p.categorySlug = data.slug!.trim();
+          p.categoryName = cat.name;
+        }
+      });
+      cat.slug = data.slug.trim();
+    }
+    if (data.description !== undefined) cat.description = data.description.trim();
+    if (data.isHidden !== undefined) cat.isHidden = data.isHidden;
+    cat.updatedAt = new Date().toISOString();
+
+    repo.addAuditLog('CATEGORY_UPDATE', 'Category', id, `Cập nhật chuyên mục: "${oldName}" -> "${cat.name}"`, actorName);
+    return cat;
+  },
+
+  toggleCategoryHidden(id: string, actorName = 'Super Admin'): Category {
+    const cat = store.categories.find(c => c.id === id);
+    if (!cat) throw new Error('Category not found');
+    cat.isHidden = !cat.isHidden;
+    cat.updatedAt = new Date().toISOString();
+    const actionDesc = cat.isHidden ? `Ẩn chuyên mục "${cat.name}" (bài viết được giữ trong data nhưng không hiện ra ngoài)` : `Hiện lại chuyên mục "${cat.name}"`;
+    repo.addAuditLog('CATEGORY_VISIBILITY', 'Category', id, actionDesc, actorName);
+    return cat;
+  },
+
+  deleteCategory(id: string, actorName = 'Super Admin'): { deletedCategory: Category; deletedPostCount: number } {
+    const index = store.categories.findIndex(c => c.id === id);
+    if (index === -1) throw new Error('Category not found');
+
+    const cat = store.categories[index];
+    // Delete all posts belonging to this category
+    const initialPostCount = store.posts.length;
+    store.posts = store.posts.filter(p => p.categorySlug !== cat.slug);
+    const deletedPostCount = initialPostCount - store.posts.length;
+
+    // Remove category
+    store.categories.splice(index, 1);
+
+    repo.addAuditLog(
+      'CATEGORY_DELETE', 
+      'Category', 
+      id, 
+      `Xóa vĩnh viễn chuyên mục "${cat.name}" và toàn bộ ${deletedPostCount} bài viết trực thuộc`, 
+      actorName
+    );
+
+    return { deletedCategory: cat, deletedPostCount };
   },
 
   // LEADS & CRM

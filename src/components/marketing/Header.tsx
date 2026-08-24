@@ -15,6 +15,31 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [solutionsDropdownOpen, setSolutionsDropdownOpen] = useState(false);
+  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
+  const solutionsTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const aboutTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleSolutionsEnter = () => {
+    if (solutionsTimeoutRef.current) clearTimeout(solutionsTimeoutRef.current);
+    setSolutionsDropdownOpen(true);
+  };
+
+  const handleSolutionsLeave = () => {
+    solutionsTimeoutRef.current = setTimeout(() => {
+      setSolutionsDropdownOpen(false);
+    }, 250);
+  };
+
+  const handleAboutEnter = () => {
+    if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
+    setAboutDropdownOpen(true);
+  };
+
+  const handleAboutLeave = () => {
+    aboutTimeoutRef.current = setTimeout(() => {
+      setAboutDropdownOpen(false);
+    }, 250);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -124,9 +149,9 @@ export function Header() {
                 return (
                   <div 
                     key={item.name} 
-                    className="relative"
-                    onMouseEnter={() => setSolutionsDropdownOpen(true)}
-                    onMouseLeave={() => setSolutionsDropdownOpen(false)}
+                    className="relative py-2"
+                    onMouseEnter={handleSolutionsEnter}
+                    onMouseLeave={handleSolutionsLeave}
                   >
                     <Link
                       href="/giai-phap"
@@ -140,38 +165,44 @@ export function Header() {
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 shrink-0 ${solutionsDropdownOpen ? 'rotate-180 text-brand-500' : ''}`} />
                     </Link>
 
-                    {/* Solutions Dropdown Menu */}
+                    {/* Solutions Dropdown Menu with Safe Hover Bridge */}
                     {solutionsDropdownOpen && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                        {solutions.map((sol) => (
-                          <Link
-                            key={sol.title}
-                            href={sol.href}
-                            className="p-3.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all group flex items-start gap-3"
-                          >
-                            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${sol.color} text-white shadow-sm shrink-0 group-hover:scale-105 transition-transform`}>
-                              <sol.icon className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
-                                  {sol.badge}
-                                </span>
+                      <div 
+                        className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50"
+                        onMouseEnter={handleSolutionsEnter}
+                        onMouseLeave={handleSolutionsLeave}
+                      >
+                        <div className="w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                          {solutions.map((sol) => (
+                            <Link
+                              key={sol.title}
+                              href={sol.href}
+                              className="p-3.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all group flex items-start gap-3"
+                            >
+                              <div className={`p-2.5 rounded-xl bg-gradient-to-br ${sol.color} text-white shadow-sm shrink-0 group-hover:scale-105 transition-transform`}>
+                                <sol.icon className="w-5 h-5" />
                               </div>
-                              <h4 className="text-sm font-bold text-navy-text group-hover:text-brand-500 transition-colors">
-                                {sol.title}
-                              </h4>
-                              <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">
-                                {sol.desc}
-                              </p>
-                            </div>
-                          </Link>
-                        ))}
-                        <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center justify-between px-2 text-xs">
-                          <span className="text-slate-500">Hợp tác chiến lược công nghệ cùng ADT Quốc tế</span>
-                          <Link href="/giai-phap" className="text-brand-500 font-semibold hover:underline flex items-center gap-1">
-                            Xem tất cả giải pháp <ArrowRight className="w-3 h-3" />
-                          </Link>
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                                    {sol.badge}
+                                  </span>
+                                </div>
+                                <h4 className="text-sm font-bold text-navy-text group-hover:text-brand-500 transition-colors">
+                                  {sol.title}
+                                </h4>
+                                <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">
+                                  {sol.desc}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                          <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center justify-between px-2 text-xs">
+                            <span className="text-slate-500">Hợp tác chiến lược công nghệ cùng ADT Quốc tế</span>
+                            <Link href="/giai-phap" className="text-brand-500 font-semibold hover:underline flex items-center gap-1">
+                              Xem tất cả giải pháp <ArrowRight className="w-3 h-3" />
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -181,7 +212,12 @@ export function Header() {
 
               if (item.children) {
                 return (
-                  <div key={item.name} className="relative group">
+                  <div 
+                    key={item.name} 
+                    className="relative py-2"
+                    onMouseEnter={handleAboutEnter}
+                    onMouseLeave={handleAboutLeave}
+                  >
                     <Link
                       href={item.href}
                       className={`px-3 py-2 rounded-lg text-sm font-semibold flex items-center gap-1 transition-colors whitespace-nowrap ${
@@ -191,20 +227,29 @@ export function Header() {
                       }`}
                     >
                       <span>{item.name}</span>
-                      <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:rotate-180 transition-transform shrink-0" />
+                      <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform shrink-0 ${aboutDropdownOpen ? 'rotate-180 text-brand-500 opacity-100' : ''}`} />
                     </Link>
-                    <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2 hidden group-hover:block animate-in fade-in slide-in-from-top-1 duration-150 z-50">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.name}
-                          href={child.href}
-                          className="p-2.5 rounded-lg hover:bg-slate-50 block transition-colors"
-                        >
-                          <div className="text-sm font-semibold text-navy-text">{child.name}</div>
-                          <div className="text-xs text-slate-500">{child.desc}</div>
-                        </Link>
-                      ))}
-                    </div>
+
+                    {aboutDropdownOpen && (
+                      <div 
+                        className="absolute top-full left-0 pt-2 z-50"
+                        onMouseEnter={handleAboutEnter}
+                        onMouseLeave={handleAboutLeave}
+                      >
+                        <div className="w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.name}
+                              href={child.href}
+                              className="p-2.5 rounded-lg hover:bg-slate-50 block transition-colors"
+                            >
+                              <div className="text-sm font-semibold text-navy-text">{child.name}</div>
+                              <div className="text-xs text-slate-500">{child.desc}</div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               }

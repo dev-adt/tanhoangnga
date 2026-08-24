@@ -30,7 +30,7 @@ export default function GovinaAiPage() {
     { title: 'Trợ lý HĐND — UBND', desc: 'Tổng hợp ý kiến cử tri, biên bản kỳ họp, theo dõi tiến độ thực hiện nghị quyết và nhiệm vụ giao.' },
     { title: 'Trợ lý Khối Kinh tế', desc: 'Tra cứu thủ tục đăng ký kinh doanh hộ gia đình, thuế, quản lý tài chính - ngân sách và chợ.' },
     { title: 'Trợ lý Văn hóa — Xã hội', desc: 'Chế độ chính sách người có công, bảo trợ xã hội, y tế, giáo dục, hộ tịch và chứng thực.' },
-    { title: 'Trợ lý Hạ tầng — Đô thị', desc: 'Quản lý trật tự xây dựng, địa chính, tài nguyên môi trường, cấp phép và quản lý đất đai.' }
+    { title: 'Trợ lý AI Thủ tục hành chính', desc: 'Dành cho người dân: Hướng dẫn thành phần hồ sơ, quy trình một cửa, biểu mẫu và tra cứu tiến độ dịch vụ công trực tuyến.' }
   ];
 
   const faqs = [
