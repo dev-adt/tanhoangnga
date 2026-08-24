@@ -28,7 +28,7 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
-          DATABASE_URL: "file:./data/tanhoangnga.db"
+          DATABASE_URL: "mysql://user:pass@127.0.0.1:3306/tanhoangnga"
 
       - name: Clean Previous Builds
         run: rm -rf .next release
@@ -36,7 +36,7 @@ jobs:
       - name: Build Next.js Standalone
         run: npm run build
         env:
-          DATABASE_URL: "file:./data/tanhoangnga.db"
+          DATABASE_URL: "mysql://user:pass@127.0.0.1:3306/tanhoangnga"
 
       - name: Validate Marketing Routes are Dynamic (Zero Route Cache)
         run: |

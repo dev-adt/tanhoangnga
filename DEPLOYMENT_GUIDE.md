@@ -1,59 +1,63 @@
-# HƯỚNG DẪN TRIỂN KHAI TÂN HOÀNG NGA (CI/CD GITHUB ACTIONS + DATABASE THẬT)
+# HƯỚNG DẪN KẾT NỐI MYSQL AAPANEL CHO TÂN HOÀNG NGA
 
-Hệ thống vận hành chính thức với **Cơ Sở Dữ Liệu Thực Tế (Persistent Database - Prisma ORM)**:
-- **Nhánh `main`**: Mã nguồn sạch của dự án.
-- **GitHub Actions (Ubuntu Runner)**: Tự động biên dịch Prisma engine & Next.js Standalone $\rightarrow$ Đóng gói và đẩy sang nhánh **`deploy`**.
-- **Máy chủ VPS**: Kéo nhánh **`deploy`** $\rightarrow$ Tự động đồng bộ Database (`tanhoangnga.db`) $\rightarrow$ Khởi chạy PM2 qua `server.js` (Port 3022).
+Hệ thống sử dụng **Cơ Sở Dữ Liệu MySQL 8.0 trực tiếp trên aaPanel** kết hợp **Prisma ORM**.
 
 ---
 
-## 1. THÔNG TIN DATABASE
-- **Vị trí Database trên VPS**: `/www/wwwroot/tanhoangnga.com/data/tanhoangnga.db`
-- **File cấu hình môi trường**: `/www/wwwroot/tanhoangnga.com/.env`
-- **Tài khoản Super Admin khởi tạo**: `hoang.bt@tanhoangnga.vn` | **Mật khẩu**: `admin@2026`
+## BƯỚC 1: TẠO DATABASE TRÊN AAPANEL (LÀM TRONG 30 GIÂY)
+
+1. Mở aaPanel $\rightarrow$ Vào mục **Databases** (như trong ảnh bạn đang mở).
+2. Nhấn nút xanh **`Add DB`**.
+3. Điền các thông tin:
+   - **DBName**: `tanhoangnga`
+   - **DBType**: `MySQL`
+   - **Charset**: `utf8mb4`
+   - **Username**: `tanhoangnga`
+   - **Password**: *(Đặt mật khẩu hoặc nhấn nút Generate để lấy mật khẩu ngẫu nhiên, ví dụ: `MatKhauCuaBan123`)*
+4. Nhấn **Submit**.
 
 ---
 
-## 2. HƯỚNG DẪN SETUP SẠCH TRÊN VPS (LÀM 1 LẦN DUY NHẤT)
+## BƯỚC 2: KẾT NỐI & KHỞI TẠO DỮ LIỆU TRÊN TERMINAL VPS
 
-Mở **Terminal aaPanel** trên VPS và chạy:
+Mở **Terminal aaPanel** và chạy lần lượt:
 
 ```bash
-# 1. Dọn dẹp tiến trình cũ và dọn chỗ trống
-pm2 delete tanhoangnga 2>/dev/null || true
-fuser -k 3022/tcp 2>/dev/null || true
-cd /www/wwwroot
-rm -rf tanhoangnga.com
+# 1. Vào thư mục dự án (nếu chưa có thì clone nhánh deploy)
+cd /www/wwwroot/tanhoangnga.com 2>/dev/null || (cd /www/wwwroot && rm -rf tanhoangnga.com && git clone --branch deploy --single-branch https://github.com/dev-adt/tanhoangnga.git /www/wwwroot/tanhoangnga.com && cd /www/wwwroot/tanhoangnga.com)
 
-# 2. Clone nhánh deploy
-git clone \
-  --branch deploy \
-  --single-branch \
-  https://github.com/dev-adt/tanhoangnga.git \
-  /www/wwwroot/tanhoangnga.com
+# 2. Cập nhật nhánh deploy mới nhất
+git fetch origin deploy
+git reset --hard origin/deploy
+git clean -fd
 
-# 3. Khởi tạo môi trường & Database
-cd /www/wwwroot/tanhoangnga.com
-cp .env.example .env
-mkdir -p data
+# 3. Tạo file .env với thông tin MySQL bạn vừa tạo ở Bước 1
+# (Thay 'MatKhauCuaBan123' bằng Mật khẩu thật bạn vừa tạo ở Bước 1)
+cat << 'EOF' > .env
+DATABASE_URL="mysql://tanhoangnga:MatKhauCuaBan123@127.0.0.1:3306/tanhoangnga"
+NODE_ENV="production"
+PORT=3022
+HOSTNAME="0.0.0.0"
+EOF
 
-# 4. Khởi tạo Database và nạp dữ liệu thật ban đầu
+# 4. Tự động tạo bảng vào MySQL và nạp dữ liệu thật ban đầu
 npx prisma db push
 node prisma/seed.mjs
 
 # 5. Khởi chạy PM2
+pm2 delete tanhoangnga 2>/dev/null || true
 pm2 start ecosystem.config.cjs
 pm2 save
 
-# 6. Kiểm tra kết nối
+# 6. Kiểm tra
 curl -I http://127.0.0.1:3022/
 ```
 
 ---
 
-## 3. CẬP NHẬT SCRIPT 1 LỆNH CHO CÁC LẦN SAU
+## BƯỚC 3: CÀI ĐẶT SCRIPT CẬP NHẬT 1 LỆNH DUY NHẤT
 
-Tạo file script `/www/scripts/deploy-tanhoangnga.sh`:
+Tạo file `/www/scripts/deploy-tanhoangnga.sh`:
 ```bash
 mkdir -p /www/scripts
 cat << 'EOF' > /www/scripts/deploy-tanhoangnga.sh
@@ -63,47 +67,30 @@ set -euo pipefail
 APP_DIR="/www/wwwroot/tanhoangnga.com"
 cd "$APP_DIR"
 
-echo "==> Sao lưu an toàn file .env và database..."
-mkdir -p "$APP_DIR/data"
+echo "==> Sao lưu an toàn file .env..."
 if [ -f "$APP_DIR/.env" ]; then
   cp "$APP_DIR/.env" /root/tanhoangnga.env.backup 2>/dev/null || true
-fi
-if [ -f "$APP_DIR/data/tanhoangnga.db" ]; then
-  cp "$APP_DIR/data/tanhoangnga.db" /root/tanhoangnga.db.backup 2>/dev/null || true
 fi
 
 echo "==> Đang kéo bản cập nhật mới nhất từ nhánh deploy..."
 git fetch origin deploy
 git reset --hard origin/deploy
+git clean -fd
 
-# Khôi phục .env và Database
+# Khôi phục .env
 if [ -f /root/tanhoangnga.env.backup ]; then
   cp /root/tanhoangnga.env.backup "$APP_DIR/.env"
-else
-  if [ ! -f "$APP_DIR/.env" ]; then
-    cp "$APP_DIR/.env.example" "$APP_DIR/.env"
-  fi
 fi
 
-if [ -f /root/tanhoangnga.db.backup ]; then
-  mkdir -p "$APP_DIR/data"
-  cp /root/tanhoangnga.db.backup "$APP_DIR/data/tanhoangnga.db"
-fi
-
-# Kiểm tra tính toàn vẹn của gói Standalone
+# Kiểm tra các thành phần cốt lõi của gói Standalone
 test -f server.js
 test -d .next/static
 
-# Đồng bộ Database Schema
-echo "==> Đồng bộ Cơ Sở Dữ Liệu..."
-if [ ! -f "$APP_DIR/data/tanhoangnga.db" ]; then
-  npx prisma db push
-  node prisma/seed.mjs
-else
-  npx prisma db push --skip-generate
-fi
+# Đồng bộ Database Schema vào MySQL trên aaPanel
+echo "==> Đồng bộ Cơ Sở Dữ Liệu MySQL..."
+npx prisma db push --skip-generate
 
-echo "==> Khởi động lại PM2..."
+echo "==> Khởi động lại ứng dụng với PM2..."
 pm2 restart ecosystem.config.cjs --update-env
 pm2 save
 
@@ -112,13 +99,14 @@ curl --fail --silent --show-error http://127.0.0.1:3022/ >/dev/null
 
 echo "==> Phiên bản triển khai hiện tại:"
 git log -1 --oneline
-echo "✅ Deploy tanhoangnga.com với Database thật thành công!"
+echo "✅ Deploy tanhoangnga.com với MySQL thành công!"
 EOF
 
 chmod +x /www/scripts/deploy-tanhoangnga.sh
 ```
 
-👉 Từ nay, mỗi lần cập nhật bạn chỉ cần chạy:
+👉 Từ nay về sau, mỗi lần cập nhật bạn chỉ cần gõ đúng 1 dòng lệnh:
 ```bash
 /www/scripts/deploy-tanhoangnga.sh
 ```
+Hệ thống sẽ kéo bản mới nhất, tự động đồng bộ cấu trúc MySQL và nạp lại PM2 mà không bao giờ mất dữ liệu!
