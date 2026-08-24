@@ -1,0 +1,300 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/leads/[id]",
+      "regex": "^/api/leads/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/leads/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/posts/[id]",
+      "regex": "^/api/posts/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/posts/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/bai-viet/chu-de/[tagSlug]",
+      "regex": "^/bai\\-viet/chu\\-de/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPtagSlug": "nxtPtagSlug"
+      },
+      "namedRegex": "^/bai\\-viet/chu\\-de/(?<nxtPtagSlug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/bai-viet/chuyen-muc/[categorySlug]",
+      "regex": "^/bai\\-viet/chuyen\\-muc/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPcategorySlug": "nxtPcategorySlug"
+      },
+      "namedRegex": "^/bai\\-viet/chuyen\\-muc/(?<nxtPcategorySlug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/bai-viet/[postSlug]",
+      "regex": "^/bai\\-viet/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPpostSlug": "nxtPpostSlug"
+      },
+      "namedRegex": "^/bai\\-viet/(?<nxtPpostSlug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/dashboard/posts/[id]/edit",
+      "regex": "^/dashboard/posts/([^/]+?)/edit(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/dashboard/posts/(?<nxtPid>[^/]+?)/edit(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/auth/login",
+      "regex": "^/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/login(?:/)?$"
+    },
+    {
+      "page": "/bai-viet",
+      "regex": "^/bai\\-viet(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/bai\\-viet(?:/)?$"
+    },
+    {
+      "page": "/chinh-sach-bao-mat",
+      "regex": "^/chinh\\-sach\\-bao\\-mat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/chinh\\-sach\\-bao\\-mat(?:/)?$"
+    },
+    {
+      "page": "/dashboard",
+      "regex": "^/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard(?:/)?$"
+    },
+    {
+      "page": "/dashboard/audit-logs",
+      "regex": "^/dashboard/audit\\-logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/audit\\-logs(?:/)?$"
+    },
+    {
+      "page": "/dashboard/categories",
+      "regex": "^/dashboard/categories(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/categories(?:/)?$"
+    },
+    {
+      "page": "/dashboard/leads",
+      "regex": "^/dashboard/leads(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/leads(?:/)?$"
+    },
+    {
+      "page": "/dashboard/media",
+      "regex": "^/dashboard/media(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/media(?:/)?$"
+    },
+    {
+      "page": "/dashboard/posts",
+      "regex": "^/dashboard/posts(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/posts(?:/)?$"
+    },
+    {
+      "page": "/dashboard/posts/new",
+      "regex": "^/dashboard/posts/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/posts/new(?:/)?$"
+    },
+    {
+      "page": "/dashboard/roles",
+      "regex": "^/dashboard/roles(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/roles(?:/)?$"
+    },
+    {
+      "page": "/dashboard/settings",
+      "regex": "^/dashboard/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/settings(?:/)?$"
+    },
+    {
+      "page": "/dashboard/tags",
+      "regex": "^/dashboard/tags(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/tags(?:/)?$"
+    },
+    {
+      "page": "/dashboard/users",
+      "regex": "^/dashboard/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/users(?:/)?$"
+    },
+    {
+      "page": "/dieu-khoan-su-dung",
+      "regex": "^/dieu\\-khoan\\-su\\-dung(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dieu\\-khoan\\-su\\-dung(?:/)?$"
+    },
+    {
+      "page": "/doi-tac",
+      "regex": "^/doi\\-tac(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/doi\\-tac(?:/)?$"
+    },
+    {
+      "page": "/giai-phap",
+      "regex": "^/giai\\-phap(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/giai\\-phap(?:/)?$"
+    },
+    {
+      "page": "/giai-phap/adt-govina-ai",
+      "regex": "^/giai\\-phap/adt\\-govina\\-ai(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/giai\\-phap/adt\\-govina\\-ai(?:/)?$"
+    },
+    {
+      "page": "/giai-phap/coffeevn-today",
+      "regex": "^/giai\\-phap/coffeevn\\-today(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/giai\\-phap/coffeevn\\-today(?:/)?$"
+    },
+    {
+      "page": "/giai-phap/dienbien-today",
+      "regex": "^/giai\\-phap/dienbien\\-today(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/giai\\-phap/dienbien\\-today(?:/)?$"
+    },
+    {
+      "page": "/giai-phap/orion-ai-business-os",
+      "regex": "^/giai\\-phap/orion\\-ai\\-business\\-os(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/giai\\-phap/orion\\-ai\\-business\\-os(?:/)?$"
+    },
+    {
+      "page": "/gioi-thieu",
+      "regex": "^/gioi\\-thieu(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gioi\\-thieu(?:/)?$"
+    },
+    {
+      "page": "/gioi-thieu/ban-lanh-dao",
+      "regex": "^/gioi\\-thieu/ban\\-lanh\\-dao(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gioi\\-thieu/ban\\-lanh\\-dao(?:/)?$"
+    },
+    {
+      "page": "/gioi-thieu/nang-luc-loi-the",
+      "regex": "^/gioi\\-thieu/nang\\-luc\\-loi\\-the(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gioi\\-thieu/nang\\-luc\\-loi\\-the(?:/)?$"
+    },
+    {
+      "page": "/gioi-thieu/tam-nhin-su-menh",
+      "regex": "^/gioi\\-thieu/tam\\-nhin\\-su\\-menh(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gioi\\-thieu/tam\\-nhin\\-su\\-menh(?:/)?$"
+    },
+    {
+      "page": "/icon.svg",
+      "regex": "^/icon\\.svg(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon\\.svg(?:/)?$"
+    },
+    {
+      "page": "/lien-he",
+      "regex": "^/lien\\-he(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/lien\\-he(?:/)?$"
+    },
+    {
+      "page": "/llms.txt",
+      "regex": "^/llms\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/llms\\.txt(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/quy-trinh-trien-khai",
+      "regex": "^/quy\\-trinh\\-trien\\-khai(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/quy\\-trinh\\-trien\\-khai(?:/)?$"
+    },
+    {
+      "page": "/robots.txt",
+      "regex": "^/robots\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/robots\\.txt(?:/)?$"
+    },
+    {
+      "page": "/sitemap.xml",
+      "regex": "^/sitemap\\.xml(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sitemap\\.xml(?:/)?$"
+    },
+    {
+      "page": "/tim-kiem",
+      "regex": "^/tim\\-kiem(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tim\\-kiem(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

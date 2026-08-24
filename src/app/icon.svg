@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0033CC" />
+      <stop offset="50%" stop-color="#0047FF" />
+      <stop offset="100%" stop-color="#00C9FF" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F5D4" />
+      <stop offset="100%" stop-color="#00A896" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0047FF" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background Rounded Shield / Tile -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" filter="url(#shadow)" />
+  
+  <!-- Subtle Inner Border -->
+  <rect x="12" y="12" width="488" height="488" rx="116" stroke="rgba(255, 255, 255, 0.2)" stroke-width="8" fill="none" />
+
+  <!-- Monogram T Symbol (High Tech Geometric Shape) -->
+  <!-- Top Horizontal Bar -->
+  <path d="M 128 148 C 128 135 138 124 152 124 L 360 124 C 374 124 384 135 384 148 L 384 196 C 384 204 377 212 368 212 L 144 212 C 135 212 128 204 128 196 Z" fill="#FFFFFF" />
+  
+  <!-- Vertical Stem -->
+  <path d="M 224 212 L 288 212 C 296 212 302 218 302 226 L 302 364 C 302 376 292 388 280 388 L 232 388 C 220 388 210 376 210 364 L 210 226 C 210 218 216 212 224 212 Z" fill="#FFFFFF" />
+  
+  <!-- Dynamic Tech Orbit Arc (AI Accent) -->
+  <path d="M 140 340 C 170 395 240 420 310 400 C 370 380 400 320 390 260" stroke="url(#glowGrad)" stroke-width="24" stroke-linecap="round" stroke-dasharray="16 8" />
+
+  <!-- Glowing AI Node Pulse -->
+  <circle cx="396" cy="136" r="32" fill="url(#glowGrad)" />
+  <circle cx="396" cy="136" r="16" fill="#FFFFFF" />
+</svg>
