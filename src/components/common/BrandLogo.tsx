@@ -1,40 +1,40 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface BrandLogoProps {
-  size?: 'sm' | 'md' | 'lg';
-  showText?: boolean;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   lightText?: boolean;
+  withTagline?: boolean;
 }
 
-export function BrandLogo({ size = 'md', showText = true, lightText = false }: BrandLogoProps) {
-  const iconSizes = {
-    sm: 'w-8 h-8 text-base rounded-lg',
-    md: 'w-10 h-10 text-xl rounded-xl',
-    lg: 'w-12 h-12 text-2xl rounded-2xl'
-  };
-
-  const textSizes = {
-    sm: 'text-base',
-    md: 'text-lg sm:text-xl',
-    lg: 'text-xl sm:text-2xl'
+export function BrandLogo({ size = 'md', lightText = false, withTagline = false }: BrandLogoProps) {
+  const heightClasses = {
+    sm: 'h-8 sm:h-9',
+    md: 'h-10 sm:h-11',
+    lg: 'h-12 sm:h-14',
+    xl: 'h-14 sm:h-16'
   };
 
   return (
     <div className="flex items-center gap-3 group shrink-0 select-none">
-      {/* Dynamic Stylized Brand Icon */}
-      <div className={`${iconSizes[size]} bg-gradient-to-tr from-brand-600 via-cyan-accent to-mint-accent flex items-center justify-center shadow-glow text-white font-black transition-transform group-hover:scale-105 shrink-0 relative overflow-hidden`}>
-        <span className="relative z-10 font-black tracking-tighter">T</span>
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <div className={`relative ${heightClasses[size]} w-auto flex items-center`}>
+        <Image
+          src="/logo.png"
+          alt="Tân Hoàng Nga Logo"
+          width={260}
+          height={65}
+          className={`${heightClasses[size]} w-auto object-contain transition-transform group-hover:scale-102`}
+          priority
+        />
       </div>
 
-      {showText && (
-        <div className="flex flex-col whitespace-nowrap">
-          <span className={`font-extrabold ${textSizes[size]} ${lightText ? 'text-white' : 'text-navy-text'} tracking-tight flex items-center gap-1.5 leading-tight`}>
-            TÂN HOÀNG NGA
-            <span className="inline-block w-2 h-2 rounded-full bg-mint-accent animate-pulse"></span>
-          </span>
-          <span className={`text-[10px] sm:text-[11px] ${lightText ? 'text-cyan-accent' : 'text-slate-500'} tracking-wider uppercase font-medium mt-0.5 leading-none font-mono`}>
+      {withTagline && (
+        <div className="hidden sm:flex flex-col border-l border-slate-300 pl-3 py-0.5">
+          <span className={`text-[10px] font-bold uppercase tracking-wider ${lightText ? 'text-cyan-accent' : 'text-slate-500'}`}>
             Cổng Thương Hiệu Số & AI
+          </span>
+          <span className={`text-[9px] ${lightText ? 'text-slate-300' : 'text-slate-400'} font-medium`}>
+            Hồ Sơ Năng Lực 2026
           </span>
         </div>
       )}

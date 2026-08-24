@@ -8,6 +8,7 @@ import {
   Sparkles, ArrowRight,
   MapPin, Coffee, Server, Cpu
 } from 'lucide-react';
+import { BrandLogo } from '@/components/common/BrandLogo';
 
 export function Header() {
   const pathname = usePathname();
@@ -111,19 +112,9 @@ export function Header() {
             href="/" 
             onClick={handleLogoClick}
             className="flex items-center gap-3 group shrink-0"
+            title="Tân Hoàng Nga - Về đầu trang"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-cyan-accent to-mint-accent flex items-center justify-center shadow-glow text-white font-black text-xl transition-transform group-hover:scale-105 shrink-0">
-              T
-            </div>
-            <div className="flex flex-col whitespace-nowrap">
-              <span className="font-extrabold text-base sm:text-lg lg:text-xl text-navy-text tracking-tight flex items-center gap-1.5 leading-tight">
-                TÂN HOÀNG NGA
-                <span className="inline-block w-2 h-2 rounded-full bg-mint-accent animate-pulse"></span>
-              </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 tracking-wider uppercase font-medium mt-0.5 leading-none">
-                Cổng Thương Hiệu Số & AI
-              </span>
-            </div>
+            <BrandLogo size="md" />
           </Link>
 
           {/* Desktop Navigation - Strictly 1 Line */}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -45,6 +46,16 @@ function LoginForm() {
     <div className="max-w-md w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl">
       
       <div className="text-center mb-6">
+        <div className="bg-white/95 rounded-2xl p-3 inline-block mx-auto shadow-md mb-4">
+          <Image
+            src="/logo.png"
+            alt="Tân Hoàng Nga Logo"
+            width={220}
+            height={55}
+            className="h-10 w-auto object-contain"
+            priority
+          />
+        </div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-950 text-brand-400 border border-brand-800/80 text-xs font-semibold mb-3">
           <KeyRound className="w-3.5 h-3.5" />
           <span>Cổng Xác Thực Quản Trị</span>

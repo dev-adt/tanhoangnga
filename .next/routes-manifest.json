@@ -232,6 +232,12 @@
       "namedRegex": "^/gioi\\-thieu/tam\\-nhin\\-su\\-menh(?:/)?$"
     },
     {
+      "page": "/icon.png",
+      "regex": "^/icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon\\.png(?:/)?$"
+    },
+    {
       "page": "/icon.svg",
       "regex": "^/icon\\.svg(?:/)?$",
       "routeKeys": {},

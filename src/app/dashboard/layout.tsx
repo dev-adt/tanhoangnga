@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import NextImage from 'next/image';
 import { 
   LayoutDashboard, FileText, PlusCircle, FolderTree, Tag, 
-  Image, Users, Shield, Inbox, History, Settings, 
+  Image as ImageIcon, Users, Shield, Inbox, History, Settings, 
   LogOut, ExternalLink, Menu, X, ChevronRight, Sparkles,
   UserCheck, ShieldAlert, KeyRound, ChevronDown, Check, Lock
 } from 'lucide-react';
@@ -62,7 +63,7 @@ export default function DashboardLayout({
         { name: 'Viết bài mới', href: '/dashboard/posts/new', icon: PlusCircle, permission: 'posts.create' },
         { name: 'Chuyên mục', href: '/dashboard/categories', icon: FolderTree, permission: 'categories.manage' },
         { name: 'Thẻ (Tags)', href: '/dashboard/tags', icon: Tag, permission: 'categories.manage' },
-        { name: 'Thư viện Media', href: '/dashboard/media', icon: Image, permission: 'media.manage.own' }
+        { name: 'Thư viện Media', href: '/dashboard/media', icon: ImageIcon, permission: 'media.manage.own' }
       ]
     },
     {
@@ -157,17 +158,17 @@ export default function DashboardLayout({
         
         {/* Sidebar Header */}
         <div>
-          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <div className="p-4 border-b border-slate-800 flex items-center justify-between">
             <Link href="/dashboard" className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-500 via-cyan-accent to-mint-accent flex items-center justify-center text-white font-black shadow-glow text-lg">
-                T
-              </div>
-              <div>
-                <span className="font-bold text-sm tracking-tight text-white block">TÂN HOÀNG NGA</span>
-                <span className="text-[10px] text-cyan-accent font-mono flex items-center gap-1">
-                  <span>RBAC Phân Quyền</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-mint-accent animate-pulse"></span>
-                </span>
+              <div className="bg-white/95 rounded-xl px-2.5 py-1.5 shadow-sm inline-block">
+                <NextImage
+                  src="/logo.png"
+                  alt="Tân Hoàng Nga"
+                  width={160}
+                  height={40}
+                  className="h-7 w-auto object-contain"
+                  priority
+                />
               </div>
             </Link>
             <button 

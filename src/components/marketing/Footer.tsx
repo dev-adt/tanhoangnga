@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Building2, Phone, Mail, MapPin, ShieldCheck, 
   ExternalLink, ArrowUpRight, Cpu, Server, Coffee, 
@@ -17,12 +18,14 @@ export function Footer() {
           {/* Col 1 & 2: Company Profile & Legal Statement */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 via-cyan-accent to-mint-accent flex items-center justify-center text-white font-black text-xl shadow-glow">
-                T
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white tracking-tight">CÔNG TY TNHH TÂN HOÀNG NGA</h3>
-                <p className="text-xs text-cyan-accent font-medium">Hệ sinh thái Giải pháp AI & Chuyển đổi số</p>
+              <div className="bg-white/95 rounded-xl px-3 py-1.5 shadow-sm inline-block">
+                <Image
+                  src="/logo.png"
+                  alt="Tân Hoàng Nga Logo"
+                  width={200}
+                  height={50}
+                  className="h-9 w-auto object-contain"
+                />
               </div>
             </div>
 
