@@ -91,12 +91,19 @@ export default function DashboardLayout({
   const requiredPermission = ROUTE_PERMISSION_MAP[pathname];
   const isRouteAllowed = !requiredPermission || hasPermission(requiredPermission);
 
+  // Auto redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !currentUser)) {
+      router.replace(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [isLoading, isAuthenticated, currentUser, pathname, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-semibold">Đang tải cấu hình phân quyền...</span>
+          <span className="text-sm font-semibold">Đang kiểm tra quyền truy cập...</span>
         </div>
       </div>
     );
@@ -110,16 +117,16 @@ export default function DashboardLayout({
             <Lock className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Khu Vực Quản Trị Hạn Chế</h2>
+            <h2 className="text-xl font-bold text-white">Yêu Cầu Đăng Nhập</h2>
             <p className="text-xs text-slate-400 mt-1">
-              Bạn chưa đăng nhập hoặc phiên làm việc đã kết thúc. Vui lòng đăng nhập qua Cổng xác thực.
+              Bạn chưa đăng nhập vào hệ thống quản trị. Đang chuyển hướng đến cổng xác thực...
             </p>
           </div>
           <Link
-            href="/auth/login"
+            href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
             className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold block transition-all shadow-glow"
           >
-            Đến Cổng Đăng Nhập
+            Đến Cổng Đăng Nhập Ngay
           </Link>
         </div>
       </div>
@@ -235,48 +242,6 @@ export default function DashboardLayout({
                 <span className="text-[10px] text-slate-400 block truncate">{currentUser.roleName}</span>
               </div>
             </div>
-          </div>
-
-          {/* Quick Role Switcher for Testing */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-              className="w-full py-1.5 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-750 border border-slate-700 text-[11px] font-medium text-slate-300 flex items-center justify-between transition-colors"
-            >
-              <div className="flex items-center gap-1.5">
-                <UserCheck className="w-3.5 h-3.5 text-cyan-accent" />
-                <span>Chuyển vai trò test:</span>
-              </div>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${roleDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {roleDropdownOpen && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-slate-950 border border-slate-800 rounded-xl p-1.5 shadow-2xl space-y-1 z-50">
-                {DEMO_ACCOUNTS.map((acc) => (
-                  <button
-                    key={acc.user.id}
-                    type="button"
-                    onClick={() => {
-                      switchRole(acc.user.roleSlug);
-                      setRoleDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between ${
-                      currentUser.roleSlug === acc.user.roleSlug 
-                        ? 'bg-brand-600 text-white font-bold' 
-                        : 'text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <div className="truncate">
-                      <span>{acc.user.roleName}</span>
-                    </div>
-                    {currentUser.roleSlug === acc.user.roleSlug && (
-                      <Check className="w-3.5 h-3.5 shrink-0 ml-1" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="pt-2 flex items-center justify-between border-t border-slate-800/80">

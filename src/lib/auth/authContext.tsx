@@ -97,13 +97,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(savedUserStr);
         setCurrentUser(parsed);
       } else {
-        // Default to super_admin session for initial convenience, or null
-        const defaultUser = DEMO_ACCOUNTS[0].user;
-        setCurrentUser(defaultUser);
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(defaultUser));
+        // No active session: User must log in via /auth/login
+        setCurrentUser(null);
       }
     } catch {
-      setCurrentUser(DEMO_ACCOUNTS[0].user);
+      setCurrentUser(null);
     } finally {
       setIsLoading(false);
     }
