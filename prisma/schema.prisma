@@ -1,0 +1,136 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String?
+  avatar       String?  @db.Text
+  roleSlug     String   @default("viewer")
+  roleName     String   @default("Khách quan sát")
+  status       String   @default("ACTIVE") // ACTIVE, SUSPENDED, DEACTIVATED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @db.Text
+  isSystem    Boolean  @default(false)
+  permissions String   @db.Text // JSON array string of permission slugs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @db.Text
+  isHidden    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  posts       Post[]
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id                 String    @id @default(cuid())
+  title              String    @db.VarChar(500)
+  slug               String    @unique
+  excerpt            String    @db.Text
+  content            String    @db.LongText // HTML or rich markdown content
+  coverImage         String    @db.Text
+  coverAlt           String?   @db.Text
+  authorId           String
+  authorName         String
+  authorAvatar       String?   @db.Text
+  categorySlug       String
+  categoryName       String
+  category           Category? @relation(fields: [categorySlug], references: [slug], onDelete: Cascade)
+  tags               String    @db.Text // JSON array of strings
+  status             String    @default("PUBLISHED") // DRAFT, IN_REVIEW, PUBLISHED, ARCHIVED
+  isPinned           Boolean   @default(false)
+  pinOrder           Int?      // 1, 2, 3
+  pinExpiresAt       DateTime?
+  publishedAt        DateTime? @default(now())
+  scheduledAt        DateTime?
+  seoTitle           String?   @db.VarChar(500)
+  metaDescription    String?   @db.Text
+  canonicalUrl       String?   @db.Text
+  focusKeyword       String?
+  ogImage            String?   @db.Text
+  faqData            String?   @db.LongText // JSON array string of {question, answer}
+  citations          String?   @db.Text // JSON array string of {title, url}
+  viewCount          Int       @default(0)
+  readingTimeMinutes Int       @default(5)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model PostRedirect {
+  id        String   @id @default(cuid())
+  oldSlug   String   @unique
+  newSlug   String
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  fullName        String
+  phone           String
+  email           String
+  organization    String
+  position        String?
+  serviceInterest String   // Solution category or interest
+  message         String   @db.Text
+  status          String   @default("NEW") // NEW, CONTACTED, IN_PROGRESS, QUALIFIED, CLOSED
+  notes           String?  @db.Text // JSON array string of timeline notes
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  summary   String   @db.Text
+  actorName String   @default("Hệ thống")
+  createdAt DateTime @default(now())
+}
+
+model SiteSetting {
+  id              String   @id @default("global")
+  siteName        String   @default("Tân Hoàng Nga")
+  hotline         String   @default("0981 83 2345")
+  email           String   @default("contact@tanhoangnga.vn")
+  address         String   @db.Text
+  companyTitle    String   @default("CÔNG TY TNHH TÂN HOÀNG NGA")
+  footerCopyright String   @db.Text
+  updatedAt       DateTime @updatedAt
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  name      String
+  url       String   @db.Text
+  mimeType  String   @default("image/png")
+  sizeBytes Int      @default(0)
+  createdAt DateTime @default(now())
+}
