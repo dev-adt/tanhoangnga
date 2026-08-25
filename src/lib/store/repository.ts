@@ -83,7 +83,18 @@ export const repo = {
         p.content.toLowerCase().includes(q)
       );
     }
-    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return list.sort((a, b) => {
+      // 1. Pinned posts come first
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      if (a.isPinned && b.isPinned) {
+        return (a.pinOrder || 99) - (b.pinOrder || 99);
+      }
+      // 2. Unpinned posts sorted by newest date
+      const dateA = new Date(a.publishedAt || a.createdAt).getTime();
+      const dateB = new Date(b.publishedAt || b.createdAt).getTime();
+      return dateB - dateA;
+    });
   },
 
   getPostBySlug(slug: string): Post | undefined {

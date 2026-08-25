@@ -85,13 +85,7 @@ export default function ContactPage() {
                   <ShieldCheck className="w-4 h-4" />
                   <span>Đối tác phân phối & triển khai của ADT Quốc tế</span>
                 </p>
-                <p>Hợp đồng hợp tác số: {settings.partnerContractNumber}</p>
               </div>
-            </div>
-
-            {/* Note on banking information security */}
-            <div className="p-6 rounded-2xl bg-blue-50 border border-blue-100 text-xs text-blue-900 leading-relaxed">
-              <strong>Lưu ý bảo mật:</strong> Theo đúng quy định an toàn tại plan.md, thông tin tài khoản ngân hàng không hiển thị công khai trên website public và chỉ được cung cấp qua hợp đồng kinh tế chính thức.
             </div>
 
           </div>
