@@ -41,7 +41,7 @@ HOSTNAME="0.0.0.0"
 EOF
 
 # 4. Tự động tạo bảng vào MySQL và nạp dữ liệu thật ban đầu
-npx prisma db push
+npx prisma@6 db push
 node prisma/seed.mjs
 
 # 5. Khởi chạy PM2

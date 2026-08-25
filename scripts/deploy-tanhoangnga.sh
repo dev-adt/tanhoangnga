@@ -29,7 +29,7 @@ test -d .next/static
 
 # Đồng bộ Database Schema vào MySQL trên aaPanel
 echo "==> Đồng bộ Cơ Sở Dữ Liệu MySQL..."
-npx prisma db push --skip-generate
+npx prisma@6 db push --skip-generate
 
 echo "==> Khởi động lại ứng dụng với PM2..."
 pm2 restart ecosystem.config.cjs --update-env
