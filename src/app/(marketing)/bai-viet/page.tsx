@@ -2,30 +2,53 @@ import React from 'react';
 import Link from 'next/link';
 import { repo } from '@/lib/store/repository';
 import { formatDateVi } from '@/lib/utils';
-import { Calendar, Clock, Pin, ArrowRight, Tag, BookOpen, Search } from 'lucide-react';
+import { 
+  Calendar, Clock, Pin, ArrowRight, BookOpen, Search, 
+  ChevronLeft, ChevronRight 
+} from 'lucide-react';
 
 export const metadata = {
   title: 'Thư Viện Tri Thức & Bài Viết Chuyên Sâu — Tân Hoàng Nga',
   description: 'Tổng hợp các bài viết phân tích, cẩm nang ứng dụng AI cho chính quyền cơ sở, quản trị doanh nghiệp và dữ liệu nông nghiệp xuất khẩu.'
 };
 
+const POSTS_PER_PAGE = 6;
+
 export default async function BlogListingPage({
   searchParams
 }: {
-  searchParams: Promise<{ q?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; page?: string }>;
 }) {
   const params = await searchParams;
   const q = params?.q || '';
   const categorySlug = params?.category || '';
+  const currentPage = Math.max(1, parseInt(params?.page || '1', 10) || 1);
 
-  const posts = repo.getPosts({
+  const allPosts = repo.getPosts({
     status: 'PUBLISHED',
     categorySlug: categorySlug || undefined,
     search: q || undefined
   });
 
+  const totalPosts = allPosts.length;
+  const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE) || 1;
+  const validPage = Math.min(currentPage, totalPages);
+
+  const paginatedPosts = allPosts.slice(
+    (validPage - 1) * POSTS_PER_PAGE,
+    validPage * POSTS_PER_PAGE
+  );
+
   const categories = repo.getCategories();
-  const tags = repo.getTags();
+
+  const buildUrl = (targetPage: number) => {
+    const searchParamsObj = new URLSearchParams();
+    if (q) searchParamsObj.set('q', q);
+    if (categorySlug) searchParamsObj.set('category', categorySlug);
+    if (targetPage > 1) searchParamsObj.set('page', targetPage.toString());
+    const queryStr = searchParamsObj.toString();
+    return queryStr ? `/bai-viet?${queryStr}` : '/bai-viet';
+  };
 
   return (
     <div className="py-12 lg:py-16">
@@ -89,7 +112,7 @@ export default async function BlogListingPage({
         </div>
 
         {/* Posts Grid */}
-        {posts.length === 0 ? (
+        {paginatedPosts.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
             <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <h3 className="text-lg font-bold text-navy-text">Không tìm thấy bài viết phù hợp</h3>
@@ -102,87 +125,132 @@ export default async function BlogListingPage({
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
-              <article
-                key={post.id}
-                className="bg-white rounded-3xl overflow-hidden shadow-card border border-slate-200/80 hover:shadow-card-hover hover:border-brand-200 transition-all flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                    <img
-                      src={post.coverImage}
-                      alt={post.coverAlt || post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {post.isPinned && (
-                      <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-brand-600 text-white text-[11px] font-bold flex items-center gap-1 shadow-md">
-                        <Pin className="w-3 h-3 rotate-45" />
-                        <span>Nổi bật #{post.pinOrder || 1}</span>
-                      </div>
-                    )}
-                    <Link
-                      href={`/bai-viet/chuyen-muc/${post.categorySlug}`}
-                      className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-navy-text text-xs font-semibold shadow-sm hover:bg-white"
-                    >
-                      {post.categoryName}
-                    </Link>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mb-2.5">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {formatDateVi(post.publishedAt || post.createdAt)}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {post.readingTimeMinutes || 5} phút đọc
-                      </span>
+          <div className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {paginatedPosts.map((post) => (
+                <article
+                  key={post.id}
+                  className="bg-white rounded-3xl overflow-hidden shadow-card border border-slate-200/80 hover:shadow-card-hover hover:border-brand-200 transition-all flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                      <img
+                        src={post.coverImage}
+                        alt={post.coverAlt || post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {post.isPinned && (
+                        <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-brand-600 text-white text-[11px] font-bold flex items-center gap-1 shadow-md">
+                          <Pin className="w-3 h-3 rotate-45" />
+                          <span>Nổi bật #{post.pinOrder || 1}</span>
+                        </div>
+                      )}
+                      <Link
+                        href={`/bai-viet/chuyen-muc/${post.categorySlug}`}
+                        className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-navy-text text-xs font-semibold shadow-sm hover:bg-white"
+                      >
+                        {post.categoryName}
+                      </Link>
                     </div>
 
-                    <h2 className="text-base sm:text-lg font-bold text-navy-text group-hover:text-brand-600 transition-colors line-clamp-2 leading-snug mb-2.5">
-                      <Link href={`/bai-viet/${post.slug}`}>
-                        {post.title}
-                      </Link>
-                    </h2>
-
-                    <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed mb-4">
-                      {post.excerpt}
-                    </p>
-
-                    {/* Tags */}
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {post.tags.slice(0, 3).map((t) => (
-                          <Link
-                            key={t}
-                            href={`/bai-viet/chu-de/${t}`}
-                            className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors"
-                          >
-                            #{t}
-                          </Link>
-                        ))}
+                    <div className="p-6">
+                      <div className="flex items-center gap-3 text-xs text-slate-400 mb-2.5">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {formatDateVi(post.publishedAt || post.createdAt)}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          {post.readingTimeMinutes || 5} phút đọc
+                        </span>
                       </div>
-                    )}
+
+                      <h2 className="text-base sm:text-lg font-bold text-navy-text group-hover:text-brand-600 transition-colors line-clamp-2 leading-snug mb-2.5">
+                        <Link href={`/bai-viet/${post.slug}`}>
+                          {post.title}
+                        </Link>
+                      </h2>
+
+                      <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed mb-4">
+                        {post.excerpt}
+                      </p>
+
+                      {/* Tags */}
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {post.tags.slice(0, 3).map((t) => (
+                            <Link
+                              key={t}
+                              href={`/bai-viet/chu-de/${t}`}
+                              className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+                            >
+                              #{t}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  <div className="p-6 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-500">
+                      {post.authorName}
+                    </span>
+                    <Link
+                      href={`/bai-viet/${post.slug}`}
+                      className="text-xs font-bold text-brand-600 group-hover:translate-x-1 transition-transform flex items-center gap-1"
+                    >
+                      <span>Xem chi tiết</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-6">
+                <Link
+                  href={buildUrl(Math.max(1, validPage - 1))}
+                  className={`p-2.5 rounded-xl border border-slate-200 text-slate-600 transition-colors flex items-center gap-1 text-xs font-bold ${
+                    validPage === 1 ? 'pointer-events-none opacity-40 bg-slate-50' : 'hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 bg-white'
+                  }`}
+                  aria-disabled={validPage === 1}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Trang trước</span>
+                </Link>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                    <Link
+                      key={pageNum}
+                      href={buildUrl(pageNum)}
+                      className={`w-9 h-9 rounded-xl text-xs font-bold flex items-center justify-center transition-all ${
+                        pageNum === validPage
+                          ? 'bg-brand-600 text-white shadow-md shadow-brand-600/20'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </Link>
+                  ))}
                 </div>
 
-                <div className="p-6 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-500">
-                    {post.authorName}
-                  </span>
-                  <Link
-                    href={`/bai-viet/${post.slug}`}
-                    className="text-xs font-bold text-brand-600 group-hover:translate-x-1 transition-transform flex items-center gap-1"
-                  >
-                    <span>Xem chi tiết</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </article>
-            ))}
+                <Link
+                  href={buildUrl(Math.min(totalPages, validPage + 1))}
+                  className={`p-2.5 rounded-xl border border-slate-200 text-slate-600 transition-colors flex items-center gap-1 text-xs font-bold ${
+                    validPage === totalPages ? 'pointer-events-none opacity-40 bg-slate-50' : 'hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 bg-white'
+                  }`}
+                  aria-disabled={validPage === totalPages}
+                >
+                  <span className="hidden sm:inline">Trang sau</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
           </div>
         )}
 

@@ -154,14 +154,12 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar & Disclaimer */}
+        {/* Bottom Bar */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© 2026 Công ty TNHH Tân Hoàng Nga. Đã đăng ký bản quyền. Thông tin được công bố theo tiêu chuẩn hồ sơ năng lực 2026.</p>
+          <p>© 2026 Công ty TNHH Tân Hoàng Nga. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link href="/chinh-sach-bao-mat" className="hover:text-slate-400 transition-colors">Bảo mật</Link>
             <Link href="/dieu-khoan-su-dung" className="hover:text-slate-400 transition-colors">Điều khoản</Link>
-            <Link href="/sitemap.xml" className="hover:text-slate-400 transition-colors">Sitemap XML</Link>
-            <Link href="/llms.txt" className="hover:text-slate-400 transition-colors">LLMs Discovery</Link>
           </div>
         </div>
       </div>
